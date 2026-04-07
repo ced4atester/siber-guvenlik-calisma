@@ -814,8 +814,9 @@ function csm(el, isCorrect, explanation) {
   } else {
     el.classList.add('yanlis');
     secenekler.forEach(s => {
-      if (s.onclick === null && !s.classList.contains('yanlis') && !s.classList.contains('dogru')) {
-        // find correct
+      const fn = s.getAttribute('onclick') || '';
+      if (fn.includes('true')) {
+        s.classList.add('dogru');
       }
     });
   }
