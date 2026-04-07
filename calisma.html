@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siber Güvenlik - Ders Çalışma Sitesi</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --card: #22253a;
+    --border: #2e3250;
+    --accent: #6c63ff;
+    --accent2: #00d4ff;
+    --warn: #ff6b35;
+    --success: #00e676;
+    --danger: #ff4757;
+    --text: #e8eaf0;
+    --muted: #8b90a8;
+    --highlight: #ffd60a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* HEADER */
+  header { background: linear-gradient(135deg, #1a1d27 0%, #12152b 100%); border-bottom: 1px solid var(--border); padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  header h1 { font-size: 1.4rem; color: var(--accent2); letter-spacing: 1px; }
+  header p { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .theme-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+  .theme-btn:hover { border-color: var(--accent); }
+
+  /* PROGRESS */
+  .progress-bar { background: var(--surface); padding: 12px 30px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; }
+  .progress-bar span { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+  .bar-outer { flex: 1; background: var(--card); border-radius: 99px; height: 8px; }
+  .bar-inner { height: 8px; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.4s; width: 0%; }
+  .score-badge { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 4px 14px; font-size: 0.85rem; font-weight: 600; color: var(--accent2); }
+
+  /* KONU TABS */
+  .konu-tabs { display: flex; gap: 6px; padding: 16px 30px 0; overflow-x: auto; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .konu-tab { padding: 10px 18px; border-radius: 8px 8px 0 0; border: 1px solid transparent; background: var(--card); color: var(--muted); cursor: pointer; font-size: 0.88rem; white-space: nowrap; transition: all 0.2s; }
+  .konu-tab:hover { color: var(--text); border-color: var(--border); }
+  .konu-tab.active { background: var(--bg); color: var(--accent2); border-color: var(--border); border-bottom-color: var(--bg); font-weight: 600; }
+
+  /* MAIN */
+  main { max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* KONU PANEL */
+  .konu-panel { display: none; }
+  .konu-panel.active { display: block; }
+
+  /* ÖZET */
+  .section-title { font-size: 1.05rem; font-weight: 700; color: var(--accent2); margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ''; display: block; width: 4px; height: 18px; background: var(--accent2); border-radius: 2px; }
+
+  .ozet-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+  .ozet-card h3 { font-size: 0.95rem; color: var(--accent); margin-bottom: 10px; }
+  .ozet-card p, .ozet-card li { font-size: 0.9rem; line-height: 1.7; color: var(--text); }
+  .ozet-card ul { padding-left: 18px; }
+  .ozet-card li { margin-bottom: 4px; }
+
+  .hl { background: #ffd60a22; color: var(--highlight); font-weight: 600; padding: 1px 4px; border-radius: 3px; }
+  .bold { font-weight: 700; color: var(--accent2); }
+  .dikkat { background: #ff6b3511; border-left: 3px solid var(--warn); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 0.88rem; color: #ffb38a; }
+  .dikkat strong { color: var(--warn); }
+  .bilgi { background: #6c63ff11; border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 0.88rem; color: #b0acff; }
+  .tag { display: inline-block; background: var(--accent)22; color: var(--accent2); border: 1px solid var(--accent)44; border-radius: 99px; padding: 2px 10px; font-size: 0.78rem; margin: 2px; }
+
+  /* SORU TABS */
+  .soru-tabs { display: flex; gap: 6px; margin: 28px 0 16px; flex-wrap: wrap; }
+  .soru-tab { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+  .soru-tab:hover { color: var(--text); }
+  .soru-tab.active { background: var(--accent)22; color: var(--accent2); border-color: var(--accent); font-weight: 600; }
+
+  .soru-panel { display: none; }
+  .soru-panel.active { display: block; }
+
+  /* ÇOKTAN SEÇMELİ */
+  .soru-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 14px; transition: border-color 0.2s; }
+  .soru-card .soru-no { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
+  .soru-card .soru-text { font-size: 0.92rem; margin-bottom: 14px; line-height: 1.6; }
+  .secenekler { display: flex; flex-direction: column; gap: 8px; }
+  .secenek { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
+  .secenek:hover:not(.disabled) { border-color: var(--accent); color: var(--accent2); }
+  .secenek .harf { width: 24px; height: 24px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; }
+  .secenek.dogru { background: #00e67611; border-color: var(--success); color: #80ffba; }
+  .secenek.dogru .harf { background: var(--success); color: #000; }
+  .secenek.yanlis { background: #ff475711; border-color: var(--danger); color: #ff9eaa; }
+  .secenek.yanlis .harf { background: var(--danger); color: #fff; }
+  .secenek.disabled { cursor: default; opacity: 0.7; }
+  .aciklama-box { margin-top: 12px; padding: 10px 14px; background: #00d4ff11; border-left: 3px solid var(--accent2); border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #90e8ff; display: none; }
+  .aciklama-box.show { display: block; }
+
+  /* BOŞLUK DOLDURMA */
+  .bosluk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+  .bosluk-card .soru-text { font-size: 0.92rem; line-height: 1.8; margin-bottom: 12px; }
+  .bosluk-input { background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 7px 12px; font-size: 0.88rem; width: 100%; max-width: 400px; outline: none; transition: border-color 0.2s; }
+  .bosluk-input:focus { border-color: var(--accent); }
+  .bosluk-input.dogru { border-color: var(--success); background: #00e67611; }
+  .bosluk-input.yanlis { border-color: var(--danger); background: #ff475711; }
+  .kontrol-btn { margin-top: 10px; background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: opacity 0.2s; }
+  .kontrol-btn:hover { opacity: 0.85; }
+  .bosluk-sonuc { margin-top: 8px; font-size: 0.85rem; display: none; }
+  .bosluk-sonuc.show { display: block; }
+  .bosluk-sonuc.dogru { color: var(--success); }
+  .bosluk-sonuc.yanlis { color: var(--danger); }
+
+  /* D/Y */
+  .dy-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; }
+  .dy-text { flex: 1; font-size: 0.9rem; line-height: 1.6; min-width: 200px; }
+  .dy-btns { display: flex; gap: 8px; flex-shrink: 0; }
+  .dy-btn { padding: 7px 18px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; background: var(--card); color: var(--text); }
+  .dy-btn.d-btn:hover { border-color: var(--success); color: var(--success); }
+  .dy-btn.y-btn:hover { border-color: var(--danger); color: var(--danger); }
+  .dy-btn.dogru-sec { background: #00e67622; border-color: var(--success); color: var(--success); }
+  .dy-btn.yanlis-sec { background: #ff475722; border-color: var(--danger); color: var(--danger); }
+  .dy-aciklama { width: 100%; font-size: 0.83rem; padding: 8px 12px; border-radius: 6px; display: none; margin-top: -6px; }
+  .dy-aciklama.show { display: block; }
+  .dy-aciklama.dogru { background: #00e67611; color: #80ffba; border-left: 3px solid var(--success); }
+  .dy-aciklama.yanlis { background: #ff475711; color: #ff9eaa; border-left: 3px solid var(--danger); }
+
+  /* KLASİK */
+  .klasik-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+  .klasik-card .soru-text { font-size: 0.92rem; line-height: 1.6; margin-bottom: 14px; }
+  .klasik-textarea { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 14px; font-size: 0.88rem; font-family: inherit; resize: vertical; min-height: 80px; outline: none; transition: border-color 0.2s; }
+  .klasik-textarea:focus { border-color: var(--accent); }
+  .goster-btn { margin-top: 10px; background: transparent; border: 1px solid var(--accent); color: var(--accent2); padding: 7px 18px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+  .goster-btn:hover { background: var(--accent)22; }
+  .klasik-cevap { margin-top: 12px; padding: 12px 16px; background: #6c63ff11; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; font-size: 0.88rem; color: #c0bcff; display: none; line-height: 1.6; }
+  .klasik-cevap.show { display: block; }
+
+  /* SKOR */
+  .skor-area { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 24px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .skor-yuzde { font-size: 2.2rem; font-weight: 800; color: var(--accent2); }
+  .skor-detail { font-size: 0.85rem; color: var(--muted); }
+  .reset-btn { margin-left: auto; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+  /* LIGHT MODE */
+  body.light { --bg: #f5f6fa; --surface: #fff; --card: #f0f1f8; --border: #dde1f0; --text: #1a1d27; --muted: #6b708a; }
+  body.light .konu-tab.active { background: var(--bg); }
+
+  @media (max-width: 600px) {
+    header { padding: 16px 16px; }
+    main { padding: 16px 12px 50px; }
+    .konu-tabs { padding: 12px 12px 0; }
+    .progress-bar { padding: 10px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🔐 Siber Güvenlik & Enformasyon</h1>
+    <p>Ders Çalışma Platformu — 4 Konu | Özet + Sorular</p>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌙 Tema</button>
+</header>
+
+<div class="progress-bar">
+  <span id="progress-text">0 / 0 soru yanıtlandı</span>
+  <div class="bar-outer"><div class="bar-inner" id="bar-inner"></div></div>
+  <div class="score-badge" id="score-badge">%0</div>
+</div>
+
+<div class="konu-tabs">
+  <button class="konu-tab active" onclick="switchKonu(0)">📚 Hafta 1 — Enformasyon</button>
+  <button class="konu-tab" onclick="switchKonu(1)">🛡️ Hafta 2 — Siber Güvenlik</button>
+  <button class="konu-tab" onclick="switchKonu(2)">🏢 Hafta 3 — SOME & USOM</button>
+  <button class="konu-tab" onclick="switchKonu(3)">♻️ İş Sürekliliği & Felaket</button>
+  <button class="konu-tab" onclick="switchKonu(4)">📝 Ekstra Sorular</button>
+</div>
+
+<main>
+
+<!-- ========== KONU 0: HAFTA 1 ========== -->
+<div class="konu-panel active" id="konu-0">
+  <div class="section-title">Özet — Enformasyon ve Bilgi Bilimi</div>
+
+  <div class="ozet-card">
+    <h3>📊 Bilgi Hiyerarşisi (DIKW)</h3>
+    <div class="bilgi"><strong>Temel Formül:</strong> Veri → Enformasyon → Bilgi (Knowledge) → Akıl (Wisdom)</div>
+    <ul>
+      <li><span class="hl">Veri:</span> Ham, işlenmemiş gerçekler (örn. "85 milyon")</li>
+      <li><span class="hl">Enformasyon:</span> Belirli amaç için yapılandırılmış veri; mesajın içeriği</li>
+      <li><span class="hl">Bilgi:</span> Enformasyon + deneyim + anlayış</li>
+      <li><span class="hl">Akıl (Wisdom):</span> Bilginin tesirli kullanımıyla oluşan en üst basamak</li>
+    </ul>
+  </div>
+
+  <div class="ozet-card">
+    <h3>✅ İyi Bilginin Nitelikleri</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+      <span class="tag">Doğruluk</span><span class="tag">Uygunluk</span><span class="tag">Zamanlılık</span>
+      <span class="tag">Noksansızlık</span><span class="tag">Ekonomiklik</span><span class="tag">Güncellik</span>
+    </div>
+    <div class="dikkat"><strong>⚠️ Dikkat:</strong> Doğruluk = bilginin hatalardan arındırılmış olması. Güncellik = karar verilecek konudaki en son durumu yansıtması.</div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🌐 Bilginin Doğal Özellikleri</h3>
+    <ul>
+      <li>Paylaştıkça <span class="bold">artar</span>, kullanıldıkça <span class="bold">yıpranmaz</span></li>
+      <li>Eş zamanlı birden fazla kişi kullanabilir</li>
+      <li>Büyümesi önlenemez — <span class="hl">ayrıcalıklı</span> bir özelliktir</li>
+    </ul>
+    <div class="dikkat"><strong>⚠️ Dikkat:</strong> "Bilgi kullanıldıkça yıpranan bir kaynaktır" — <strong>YANLIŞ</strong> bir ifadedir!</div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>📖 Bilgi Türleri</h3>
+    <ul>
+      <li><span class="bold">Pratik Bilgi:</span> İş/karar ile doğrudan ilgili, profesyonel bilgi</li>
+      <li><span class="bold">Entelektüel Bilgi:</span> Felsefi, bilimsel bilgi</li>
+      <li><span class="bold">Boş Zaman Bilgisi:</span> Roman, fıkra, oyun — ciddi sorunlardan uzaklaştıran bilgi</li>
+      <li><span class="bold">İstemdışı Bilgi:</span> Sokakta yürürken rastlantıyla elde edilen bilgi</li>
+    </ul>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🔬 Enformasyon Bilimi</h3>
+    <p><span class="hl">Makro tanım:</span> Bilginin niteliklerini, davranışını, yaratılmasından depolanmasına ve kullanılmasına kadar geçen tüm süreçleri inceleyen bilim dalıdır.</p>
+    <div class="bilgi">Bilgi = <strong>Güç + Ekonomi + Rekabet</strong> avantajı</div>
+  </div>
+
+  <!-- SORU TABS -->
+  <div class="soru-tabs">
+    <button class="soru-tab active" onclick="switchSoru(this,'csm-0')">🔘 Çoktan Seçmeli</button>
+    <button class="soru-tab" onclick="switchSoru(this,'bosluk-0')">✏️ Boşluk Doldurma</button>
+    <button class="soru-tab" onclick="switchSoru(this,'dy-0')">✅ Doğru / Yanlış</button>
+    <button class="soru-tab" onclick="switchSoru(this,'klasik-0')">📝 Klasik Sorular</button>
+  </div>
+
+  <!-- ÇOKTAN SEÇMELİ -->
+  <div class="soru-panel active" id="csm-0">
+    <div class="soru-card">
+      <div class="soru-no">Soru 1</div>
+      <div class="soru-text">Bilginin hiyerarşik sıralaması hangisinde doğru verilmiştir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'Doğru sıralama: Veri → Enformasyon → Bilgi → Akıl')"><span class="harf">A</span> Veri - Bilgi - Enformasyon - Akıl</div>
+        <div class="secenek" onclick="csm(this,true,'Doğru sıralama: Veri → Enformasyon → Bilgi → Akıl (Wisdom)')"><span class="harf">B</span> Veri - Enformasyon - Bilgi - Akıl</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Enformasyon - Veri - Akıl - Bilgi</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Akıl - Bilgi - Enformasyon - Veri</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 2</div>
+      <div class="soru-text">"Türkiye nüfusunun 85 milyon olması" ifadesi bilgi hiyerarşisinde hangi basamağa örnektir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,true,'Ham rakamlar ve işlenmemiş gerçekler Veri olarak kabul edilir.')"><span class="harf">A</span> Veri</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Enformasyon</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Akıl</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Strateji</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 3</div>
+      <div class="soru-text">Bilginin "hatalardan arındırılmış" olması hangi niteliği ile ilgilidir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Uygunluk</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Noksansızlık</div>
+        <div class="secenek" onclick="csm(this,true,'Doğruluk özelliği, bilginin hatalardan arındırılmış olması gerektiğini ifade eder.')"><span class="harf">C</span> Doğruluk</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Güncellik</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 4</div>
+      <div class="soru-text">Aşağıdakilerden hangisi "Bilmenin 13 Unsuru" arasında yer almaz?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Tanışık olmak</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Ayırt etmek</div>
+        <div class="secenek" onclick="csm(this,true,'Unutmak bilmenin bir unsuru değildir; bilmek varoluşsal bir süreçtir.')"><span class="harf">C</span> Unutmak</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Kanıtlayabilir olmak</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 5</div>
+      <div class="soru-text">Romanlar, fıkralar ve oyunlar gibi aktiviteler hangi bilgi türüne girer?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Pratik Bilgi</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Entelektüel Bilgi</div>
+        <div class="secenek" onclick="csm(this,true,'İnsanı ciddi sorunlardan uzaklaştıran bilgi türüdür.')"><span class="harf">C</span> Boş Zamanları Değerlendirme Bilgisi</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Dini Bilgi</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+  </div>
+
+  <!-- BOŞLUK DOLDURMA -->
+  <div class="soru-panel" id="bosluk-0">
+    <div class="bosluk-card"><div class="soru-no">Soru 11</div><div class="soru-text">Bilginin büyümesinin önlenemez olması onun <strong>_______</strong> bir yanıdır.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'ayrıcalıklı')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 12</div><div class="soru-text">Bilgi hiyerarşisinin en üst basamağına <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'akıl')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 13</div><div class="soru-text">Karar verilecek konudaki en son durumu yansıtan bilgiye <strong>_______</strong> özelliği denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'güncellik')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 14</div><div class="soru-text">Sokakta yürürken rastladığımız bir kazadan elde ettiğimiz bilgiye <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'istemdışı bilgi')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 15</div><div class="soru-text">Bir mesajın anlamı veya içeriğine <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'enformasyon')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+  </div>
+
+  <!-- DOĞRU YANLIŞ -->
+  <div class="soru-panel" id="dy-0">
+    <div class="dy-card"><div class="dy-text">Bilgi kullanıldıkça yıpranan ve biten bir kaynaktır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Bilgi kullanıldıkça bitmez ve yıpranmaz, tam tersine artabilir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Bilgi ancak karar vericinin gereksinimlerini karşılaması durumunda anlam ifade eder.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Bilginin değeri, onu kullanan kişinin ihtiyacını karşılamasıyla ölçülür.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Enformasyon hiyerarşisinde en altta "Bilgi" katmanı bulunur.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! En altta Veri (Data) bulunur.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Ekonomiklik özelliği, bilginin üretilmesi beklenen değerden daha pahalı olmamasını ifade eder.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Bilginin üretim maliyeti, sağladığı değerin altında olmalıdır.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Enformasyon Bilimi sadece dijital verileri konu alır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Enformasyon Bilimi, dijital ve analog tüm bilgi süreçlerini kapsar.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+  </div>
+
+  <!-- KLASİK -->
+  <div class="soru-panel" id="klasik-0">
+    <div class="klasik-card"><div class="soru-no">Soru 6</div><div class="soru-text">İyi bir bilginin sahip olması gereken en az 4 özelliği yazınız.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Doğruluk, Uygunluk, Zamanlılık ve Noksansızlık. (Ayrıca: Ekonomiklik, Güncellik, Güvenilirlik de sayılabilir.)</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 7</div><div class="soru-text">Bilginin mevcut (doğal) özelliklerinden 3 tanesini belirtiniz.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">1. Bilgi kullanılarak bitmez. 2. Eş zamanlı olarak birçok kişi tarafından kullanılabilir. 3. Sık kullanımı bilgiyi yıpratmaz.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 8</div><div class="soru-text">Veri (Data) ve Enformasyon (Information) arasındaki temel fark nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Veri; işlenmemiş ham gerçeklerdir. Enformasyon ise belirli bir amaç için yapılandırılmış ve anlamlı hale getirilmiş veridir.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 9</div><div class="soru-text">Pratik Bilgi nedir? Örnek veriniz.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Bilgiyi kullanan kişinin işi, hareketi veya kararıyla doğrudan ilgili olan bilgidir. Örnek: Bir doktorun hastalık teşhis bilgisi, bir avukatın hukuk bilgisi.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 10</div><div class="soru-text">Enformasyon Bilimi'nin makro tanımı nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Bilginin niteliklerini, davranışını, yaratılmasından depolanmasına ve kullanılmasına kadar geçen tüm süreçleri inceleyen bilim dalıdır.</div></div>
+  </div>
+</div>
+
+<!-- ========== KONU 1: HAFTA 2 ========== -->
+<div class="konu-panel" id="konu-1">
+  <div class="section-title">Özet — Siber Güvenlik Tanımları ve Tehditler</div>
+
+  <div class="ozet-card">
+    <h3>🔐 CIA Üçlüsü — Siber Güvenliğin Temeli</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+      <div style="flex:1;min-width:150px;background:#6c63ff22;border:1px solid #6c63ff44;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.5rem">🔒</div><div style="font-weight:700;color:var(--accent2)">Gizlilik</div><div style="font-size:0.8rem;color:var(--muted)">Confidentiality</div></div>
+      <div style="flex:1;min-width:150px;background:#00e67622;border:1px solid #00e67644;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.5rem">🔗</div><div style="font-weight:700;color:var(--success)">Bütünlük</div><div style="font-size:0.8rem;color:var(--muted)">Integrity</div></div>
+      <div style="flex:1;min-width:150px;background:#00d4ff22;border:1px solid #00d4ff44;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.5rem">🌐</div><div style="font-weight:700;color:var(--accent2)">Erişilebilirlik</div><div style="font-size:0.8rem;color:var(--muted)">Availability</div></div>
+    </div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🦠 Kötü Amaçlı Yazılım Türleri</h3>
+    <ul>
+      <li><span class="hl">Virüs:</span> Çalışmak için <strong>taşıyıcı programa ihtiyaç duyar</strong>, kendi başına yayılamaz</li>
+      <li><span class="hl">Worm (Solucan):</span> <strong>Kendi kendine</strong> ağ üzerinden yayılır, taşıyıcıya ihtiyaç duymaz</li>
+      <li><span class="hl">Fidye Yazılımı:</span> Dosyaları şifreler, açılması için <strong>para talep eder</strong></li>
+      <li><span class="hl">Casus Yazılım (Spyware):</span> Kullanıcıyı izler, bilgileri <strong>3. taraflara sızdırır</strong></li>
+      <li><span class="hl">APT:</span> Hedef odaklı, uzun süreli, gelişmiş kalıcı tehdit</li>
+    </ul>
+    <div class="dikkat"><strong>⚠️ Sınav Tuzağı:</strong> "Virüsler kendi başlarına çalışabilir" → <strong>YANLIŞ</strong>. Virüs = taşıyıcı gerektirir!</div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🔑 Temel Kavramlar</h3>
+    <ul>
+      <li><span class="bold">Siber Uzay:</span> Tüm bilişim sistemlerinden oluşan, sınırsız sayısal ortam</li>
+      <li><span class="bold">Siber Varlık:</span> Siber ortamdaki araç, veri, doküman — korunması gereken her şey</li>
+      <li><span class="bold">Siber Olay:</span> Gizlilik, bütünlük veya erişilebilirliğin ihlali</li>
+      <li><span class="bold">Siber Casusluk:</span> Belirli bir çıkar için bilgi sızdırma faaliyeti</li>
+    </ul>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🛡️ Parola Güvenliği</h3>
+    <div class="bilgi">Örnek güçlü parola: <strong>@TaTuRk!9!9</strong> — büyük/küçük harf + rakam + özel karakter</div>
+    <ul>
+      <li>Sözlükte bulunan kelimelerden <span class="hl">kaçınılmalıdır</span></li>
+      <li>Uzun + Karmaşık + Özel karakter = <span class="bold">Güçlü parola</span></li>
+      <li>Fransızca "parole" = <strong>söz</strong>, "chiffre" = <strong>rakam (şifre)</strong></li>
+    </ul>
+  </div>
+
+  <div class="ozet-card">
+    <h3>⚔️ Siber Savaş ve Siber Terörizm</h3>
+    <ul>
+      <li><span class="hl">Siber Savaş:</span> Devletler arası, ulusal menfaatler için BT sistemlerine zarar verme</li>
+      <li><span class="hl">Siber Terörizm (FBI):</span> Planlı, politik amaçlı, barışçıl kişileri/sistemleri hedef alan saldırılar</li>
+      <li><span class="bold">NATO - Siber Silah:</span> Saldırı yeteneğine sahip, karşı tarafa zarar veren yazılım/kod parçası</li>
+    </ul>
+    <div class="dikkat"><strong>⚠️ Dikkat:</strong> Sosyal mühendislik saldırıları <strong>siber olay kapsamında</strong> değerlendirilir!</div>
+  </div>
+
+  <div class="soru-tabs">
+    <button class="soru-tab active" onclick="switchSoru(this,'csm-1')">🔘 Çoktan Seçmeli</button>
+    <button class="soru-tab" onclick="switchSoru(this,'bosluk-1')">✏️ Boşluk Doldurma</button>
+    <button class="soru-tab" onclick="switchSoru(this,'dy-1')">✅ Doğru / Yanlış</button>
+    <button class="soru-tab" onclick="switchSoru(this,'klasik-1')">📝 Klasik Sorular</button>
+  </div>
+
+  <div class="soru-panel active" id="csm-1">
+    <div class="soru-card"><div class="soru-no">Soru 1</div><div class="soru-text">Siber uzayı korumayı ve saldırıları tespit edip sistemi eski haline döndürmeyi kapsayan süreç nedir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Bilgi Yönetimi</div><div class="secenek" onclick="csm(this,true,'Siber güvenlik, siber uzaydaki sistemlerin korunmasını ve olay öncesi duruma döndürülmesini kapsar.')"><span class="harf">B</span> Siber Güvenlik</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Siber Casusluk</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Veri Madenciliği</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 2</div><div class="soru-text">Siber ortamlarda bulunan araçlar, işlemler ve verilerin bütününe ne ad verilir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Siber Olay</div><div class="secenek" onclick="csm(this,true,'Siber ortamdaki her türlü araç, doküman ve bilgi Siber Varlık olarak tanımlanır.')"><span class="harf">B</span> Siber Varlık</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Siber Silah</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Siber Suç</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 3</div><div class="soru-text">FBI'a göre "Planlı ve politik amaçlara hizmet eden, barışçıl kişileri hedef alan saldırılar" nasıl tanımlanır?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Siber Savaş</div><div class="secenek" onclick="csm(this,true,'FBI, politik amaçlı bu tür saldırıları siber terörizm olarak tanımlar.')"><span class="harf">B</span> Siber Terörizm</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Siber Zorbalık</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Siber Suç</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 4</div><div class="soru-text">Fransızca "rakam" anlamına gelen ve geri dönüştürülebilir/dönüştürülemez metinlerden oluşan terim hangisidir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Parola</div><div class="secenek" onclick="csm(this,true,'Şifre (chiffre) kelimesi Fransızcada rakam anlamına gelir.')"><span class="harf">B</span> Şifre</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Kullanıcı Adı</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Token</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 5</div><div class="soru-text">Aktif hale gelebilmesi için mutlaka bir "taşıyıcı programa" ihtiyaç duyan kötücül kod hangisidir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Worm (Solucan)</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Trojan (Truva Atı)</div><div class="secenek" onclick="csm(this,true,'Virüsler tek başına çalışamazlar, mutlaka bir taşıyıcı programa ihtiyaç duyarlar.')"><span class="harf">C</span> Virus (Virüs)</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Ransomware</div></div><div class="aciklama-box"></div></div>
+  </div>
+
+  <div class="soru-panel" id="bosluk-1">
+    <div class="bosluk-card"><div class="soru-no">Soru 11</div><div class="soru-text">Siber ortamlarda bulunan verilerin gizlilik, bütünlük veya erişilebilirliğinin ihlal edilmesine <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'siber olay')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 12</div><div class="soru-text">Fransızca "parole" sözcüğü Türkçemizde <strong>_______</strong> anlamına gelmektedir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'söz')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 13</div><div class="soru-text">Tüm dünyaya yayılmış bilişim sistemlerinden oluşan sayısal ortama <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'siber uzay')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 14</div><div class="soru-text">Belirli bir çıkar için bilgi sızdırma ve bilgi varlıklarını ele geçirme faaliyetine <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'siber casusluk')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 15</div><div class="soru-text">Hem şifre hem parola anlamına gelen İngilizce kelime <strong>_______</strong>'dur.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'password')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+  </div>
+
+  <div class="soru-panel" id="dy-1">
+    <div class="dy-card"><div class="dy-text">Sosyal mühendislik saldırıları siber olay kapsamında değerlendirilmez.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Sosyal mühendislik saldırıları siber olay kapsamındadır.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Virüsler kendi başlarına çalışabilirler ve yayılmak için başka bir programa ihtiyaç duymazlar.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Virüsler taşıyıcıya ihtiyaç duyar. Taşıyıcısız çalışan: Worm (Solucan).')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Siber varlıklar sadece bilgisayarlardan ibarettir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Siber varlıklar; sunucular, veriler, yazılımlar, ağlar ve tüm dijital araçları kapsar.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Şifre güvenliği için sözlükte bulunan kolay kelimelerden kaçınılmalıdır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Sözlük kelimeleri brute force/dictionary attack ile kolayca kırılabilir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Siber suçlarla mücadele siber güvenliğin bir parçasıdır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Siber güvenlik; önleme, tespit, müdahale ve siber suçlarla mücadeleyi kapsar.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+  </div>
+
+  <div class="soru-panel" id="klasik-1">
+    <div class="klasik-card"><div class="soru-no">Soru 6</div><div class="soru-text">Siber Varlık nedir? 2 örnek veriniz.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Siber ortamlarda bulunan araçlar, veriler veya dokümanlardır. Örnekler: Kurumsal sunucular ve veritabanlarındaki müşteri verileri.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 7</div><div class="soru-text">Siber Güvenlik ve Bilgi Güvenliği arasındaki temel fark nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Siber güvenlik, sistemlerin siber ortamda korunmasına odaklanır. Bilgi güvenliği ise bilginin bir varlık olarak dijital, fiziksel her türlü ortamda korunmasını hedefler.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 8</div><div class="soru-text">Güçlü bir parola oluştururken dikkat edilmesi gereken kriterler nelerdir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Uzunluk (en az 8-12 karakter), rakam kullanımı, büyük-küçük harf kombinasyonu ve özel karakterlerin ($, %, ^ vb.) bir arada kullanılması. Sözlük kelimelerinden kaçınılmalı.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 9</div><div class="soru-text">Siber Savaş nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Ulusal menfaatler için karşı tarafın BT sistemlerine zarar vermek veya hizmetlerini durdurmak amacıyla devletler arasında yapılan dijital saldırılardır.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 10</div><div class="soru-text">NATO'ya göre Siber Silah nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Saldırı yeteneğine sahip olan ve karşı tarafa zarar veren yazılım veya kod parçasıdır.</div></div>
+  </div>
+</div>
+
+<!-- ========== KONU 2: HAFTA 3 ========== -->
+<div class="konu-panel" id="konu-2">
+  <div class="section-title">Özet — Siber Olaylara Müdahale, SOME ve USOM</div>
+
+  <div class="ozet-card">
+    <h3>🏛️ SOME Yapısı — 3 Seviye</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+      <div style="background:#6c63ff22;border:1px solid #6c63ff44;border-radius:8px;padding:12px"><span style="color:var(--accent2);font-weight:700">1. USOM</span> — Ulusal Siber Olaylara Müdahale Merkezi. BTK bünyesinde. <span class="hl">Kuruluş: 15 Mayıs 2013</span></div>
+      <div style="background:#00d4ff22;border:1px solid #00d4ff44;border-radius:8px;padding:12px"><span style="color:var(--accent2);font-weight:700">2. Sektörel SOME</span> — Kendi sektörü kapsamında koordinasyon ve idari düzenleme</div>
+      <div style="background:#00e67622;border:1px solid #00e67644;border-radius:8px;padding:12px"><span style="color:var(--success);font-weight:700">3. Kurumsal SOME</span> — Kurumu siber saldırılara karşı korur, müdahale mekanizmasını kurar</div>
+    </div>
+    <div class="dikkat"><strong>⚠️ Dikkat:</strong> Siber Güvenlik Kurulu başkanı = <strong>Ulaştırma, Denizcilik ve Haberleşme Bakanı</strong></div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>📋 SANS Olay Müdahale Modeli — 6 Adım</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem"><span style="color:var(--accent2);font-weight:700">1.</span> Hazırlık</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem"><span style="color:var(--accent2);font-weight:700">2.</span> Tespit</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem"><span style="color:var(--accent2);font-weight:700">3.</span> Sınırlama (Containment)</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem"><span style="color:var(--accent2);font-weight:700">4.</span> Yok Etme (Eradication)</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem"><span style="color:var(--accent2);font-weight:700">5.</span> Kurtarma</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem"><span style="color:var(--accent2);font-weight:700">6.</span> Alınan Dersler</div>
+    </div>
+    <div class="bilgi"><strong>Sınırlama:</strong> Olayın yayılmasını durdurmak için sistemlerin ağdan tecrit edilmesidir.<br><strong>Yok Etme:</strong> Zararlı yazılımların sistemden tamamen temizlendiği aşama.</div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>⚖️ Görevler Ayrılığı İlkesi</h3>
+    <p>Bilgi işlem ekibi (sistem yönetimi) ile Kurumsal SOME (güvenlik denetimi) görevlerinin <span class="hl">farklı personel</span> tarafından yapılmasıdır. İz kayıtlarının bağımsız yönetilmesi bu prensip gereğidir.</p>
+  </div>
+
+  <div class="ozet-card">
+    <h3>📑 Kurumsal SOME Yükümlülükleri</h3>
+    <ul>
+      <li>İletişim kanalları <span class="hl">7/24</span> açık tutulmalı</li>
+      <li>Olaylar gecikmeksizin <span class="bold">USOM ve Sektörel SOME</span>'ye bildirilmeli</li>
+      <li>İz kayıtları asgari <span class="hl">1 yıl</span> saklanmalı</li>
+      <li>Sızma testleri en az <span class="hl">yılda bir kez</span> geniş kapsamlı yapılmalı</li>
+      <li>Suç unsuru tespit edilirse önce <span class="bold">Hukuk Müşavirliği</span>, sonra <span class="bold">savcılık/kolluk</span></li>
+    </ul>
+    <div class="dikkat"><strong>⚠️ Dikkat:</strong> Kurumsal SOME rehberinin 1. sürümü <strong>Temmuz 2014</strong>'te yayınlanmıştır.</div>
+  </div>
+
+  <div class="soru-tabs">
+    <button class="soru-tab active" onclick="switchSoru(this,'csm-2')">🔘 Çoktan Seçmeli</button>
+    <button class="soru-tab" onclick="switchSoru(this,'bosluk-2')">✏️ Boşluk Doldurma</button>
+    <button class="soru-tab" onclick="switchSoru(this,'dy-2')">✅ Doğru / Yanlış</button>
+    <button class="soru-tab" onclick="switchSoru(this,'klasik-2')">📝 Klasik Sorular</button>
+  </div>
+
+  <div class="soru-panel active" id="csm-2">
+    <div class="soru-card"><div class="soru-no">Soru 1</div><div class="soru-text">Türkiye'de ulusal siber güvenliğin koordinasyonundan sorumlu ana kurum hangisidir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> BTK</div><div class="secenek" onclick="csm(this,true,'Politika ve eylem planlarını hazırlama görevi Ulaştırma, Denizcilik ve Haberleşme Bakanlığı\'na verilmiştir.')"><span class="harf">B</span> Ulaştırma, Denizcilik ve Haberleşme Bakanlığı</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> İçişleri Bakanlığı</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> TÜBİTAK</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 2</div><div class="soru-text">Ulusal Siber Olaylara Müdahale Merkezi'nin kısa adı nedir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> S-SOME</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> TR-CERT</div><div class="secenek" onclick="csm(this,true,'USOM; BTK bünyesinde, 2013\'te kurulmuş ulusal müdahale merkezidir.')"><span class="harf">C</span> USOM</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> BTK-M</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 3</div><div class="soru-text">Siber Güvenlik Kurulu'nun başkanı kimdir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Başbakan</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Cumhurbaşkanı</div><div class="secenek" onclick="csm(this,true,'Kurul, Ulaştırma, Denizcilik ve Haberleşme Bakanı\'nın başkanlığında toplanır.')"><span class="harf">C</span> Ulaştırma, Denizcilik ve Haberleşme Bakanı</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> MİT Müsteşarı</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 4</div><div class="soru-text">SANS modeline göre siber olay müdahale sürecinin ilk adımı hangisidir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Tespit</div><div class="secenek" onclick="csm(this,true,'Süreç Hazırlık adımıyla başlar; ekip, araç ve prosedürlerin hazırlanmasını kapsar.')"><span class="harf">B</span> Hazırlık</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Sınırlama</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Yok Etme</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 5</div><div class="soru-text">Kurumsal SOME'ler olay müdahale raporunu kime iletmekle yükümlüdür?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Sadece kendi üst yönetimine</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Sadece Savcılığa</div><div class="secenek" onclick="csm(this,true,'Olaylar gecikmeksizin hem USOM\'a hem de bağlı olduğu Sektörel SOME\'ye bildirilir.')"><span class="harf">C</span> USOM ve bağlı olduğu Sektörel SOME'ye</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Hiçbir yere bildirmez</div></div><div class="aciklama-box"></div></div>
+  </div>
+
+  <div class="soru-panel" id="bosluk-2">
+    <div class="bosluk-card"><div class="soru-no">Soru 11</div><div class="soru-text">Kurumsal SOME'ler iletişim kanallarını <strong>_______</strong> açık tutmakla yükümlüdür.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'7/24')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 12</div><div class="soru-text">Siber olay esnasında suç unsuruna rastlanırsa durum gecikmeksizin <strong>_______</strong> bildirilir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'kanunen yetkili makamlara')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 13</div><div class="soru-text">Kurumsal SOME Kurulum ve Yönetim Rehberi'nin 1. sürümü <strong>_______</strong> tarihinde yayınlanmıştır.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'temmuz 2014')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 14</div><div class="soru-text">Olayın etkisini ve yayılmasını durdurmak için sistemlerin tecrit edildiği adıma <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'sınırlama')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 15</div><div class="soru-text">Siber olaylara ilişkin iz kayıtları asgari <strong>_______</strong> süreyle saklanmalıdır.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'1 yıl')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+  </div>
+
+  <div class="soru-panel" id="dy-2">
+    <div class="dy-card"><div class="dy-text">USOM, ulusal kapsamda teknik destek ve koordinasyon görevi yürütür.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! USOM, BTK bünyesinde ulusal koordinasyonu sağlar.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Kurumsal SOME sadece siber olay yaşandıktan sonra devreye girer.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! SOME proaktif olarak da çalışır; sızma testleri ve önleyici faaliyetler yürütür.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">İz kayıtlarının bağımsız yönetilmesi "Görevler Ayrılığı" prensibi gereğidir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Görevler ayrılığı, sistem yönetimi ve güvenlik denetiminin farklı kişilerce yapılmasıdır.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Sızma testleri en az yılda bir kez geniş kapsamlı olarak yapılmalıdır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Bu Kurumsal SOME rehberinde belirtilen bir zorunluluktur.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Kurumsal SOME personeli sadece yazılım uzmanlarından oluşur.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! SOME içinde hukuk müşavirliği, basın/halkla ilişkiler de paydaş olarak yer alır.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+  </div>
+
+  <div class="soru-panel" id="klasik-2">
+    <div class="klasik-card"><div class="soru-no">Soru 6</div><div class="soru-text">USOM'un kuruluş tarihi ve bağlı olduğu üst kurum nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">15 Mayıs 2013'te kurulmuştur. Bilgi Teknolojileri ve İletişim Kurumu (BTK) bünyesinde faaliyet gösterir.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 7</div><div class="soru-text">Kurumsal SOME'nin 3 temel görevini yazınız.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">1. Kurumu siber saldırılara karşı korumak. 2. Müdahale mekanizmasını kurmak ve işletmek. 3. Bilgi güvenliği çalışmalarını yürütmek.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 8</div><div class="soru-text">"Görevler Ayrılığı İlkesi" nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Bilgi işlem ekibi (sistem yönetimi) ile Kurumsal SOME (güvenlik denetimi) görevlerinin farklı personel tarafından yapılmasıdır. Bu sayede çıkar çatışması ve hata riski azaltılır.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 9</div><div class="soru-text">Kurumsal SOME'lerin iç paydaşları kimlerdir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Bilgi işlem birimi, Hukuk müşavirliği ve Basın/Halkla ilişkiler müşavirliği.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 10</div><div class="soru-text">Sektörel SOME nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Kendi sektörü kapsamında idari düzenleme ve koordinasyon görevi yürüten SOME birimidir. Kurumsal SOME'ler ile USOM arasında köprü görevi görür.</div></div>
+  </div>
+</div>
+
+<!-- ========== KONU 3: İŞ SÜREKLİLİĞİ ========== -->
+<div class="konu-panel" id="konu-3">
+  <div class="section-title">Özet — İş Sürekliliği ve Felaket Kurtarma</div>
+
+  <div class="ozet-card">
+    <h3>🔄 Temel Kavramlar</h3>
+    <ul>
+      <li><span class="hl">İş Sürekliliği (BC):</span> Kesinti sonrası ürün/hizmetleri kabul edilebilir seviyede sürdürme yeteneği — <span class="bold">ISO 22301</span></li>
+      <li><span class="hl">Felaket Kurtarma (DR):</span> BT sistemlerini ayağa kaldırmaya yönelik <strong>taktiksel</strong> süreç</li>
+      <li><span class="bold">Fark:</span> BCP = bütünsel, işin kendisi. DRP = BT odaklı taktiksel parça</li>
+    </ul>
+    <div class="bilgi">ISO/IEC <strong>27031</strong> — Bilişim teknolojilerinin iş sürekliliğine hazır olmasıyla ilgili standart</div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>📊 Kritik Metrikler</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+      <div style="flex:1;min-width:200px;background:#ff6b3511;border:1px solid #ff6b3544;border-radius:10px;padding:14px">
+        <div style="font-weight:700;color:var(--warn);font-size:1.1rem">RPO</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin:4px 0">Recovery Point Objective</div>
+        <div style="font-size:0.88rem">Kabul edilebilir maksimum <strong>veri kaybı süresi</strong></div>
+      </div>
+      <div style="flex:1;min-width:200px;background:#6c63ff11;border:1px solid #6c63ff44;border-radius:10px;padding:14px">
+        <div style="font-weight:700;color:var(--accent2);font-size:1.1rem">RTO</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin:4px 0">Recovery Time Objective</div>
+        <div style="font-size:0.88rem">Sistemin ne kadar sürede <strong>geri açılması</strong> gerektiği</div>
+      </div>
+    </div>
+    <div class="dikkat"><strong>⚠️ Dikkat:</strong> RPO değeri küçüldükçe (daha az veri kaybı) maliyet <strong>ARTAR</strong>. "RPO büyükse maliyet artar" → YANLIŞ!</div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🌪️ Felaket Türleri</h3>
+    <ul>
+      <li><span class="bold">Doğal:</span> Deprem, sel, fırtına, salgın hastalık</li>
+      <li><span class="bold">İnsan Kaynaklı:</span> Sabotaj, siber saldırı, hırsızlık</li>
+      <li><span class="bold">Çevresel:</span> Isı ve nem sorunları, yangın</li>
+    </ul>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🧪 Test Türleri</h3>
+    <ul>
+      <li><span class="hl">Masabaşı Egzersiz:</span> Sistemler gerçekte kapatılmaz, sadece senaryo tartışılır</li>
+      <li><span class="hl">Tam Kesinti Testi:</span> Asıl operasyon durdurulur, tüm işlevler FKM'den yürütülür</li>
+    </ul>
+    <div class="dikkat"><strong>⚠️ Dikkat:</strong> Masabaşı egzersizde sistemler <strong>GERÇEKTEN KAPATILMAZ</strong>!</div>
+  </div>
+
+  <div class="ozet-card">
+    <h3>🔁 PUKÖ Döngüsü</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <span class="tag" style="font-size:0.88rem;padding:4px 14px">📋 Planla</span>
+      <span class="tag" style="font-size:0.88rem;padding:4px 14px">⚡ Uygula</span>
+      <span class="tag" style="font-size:0.88rem;padding:4px 14px">🔍 Kontrol Et</span>
+      <span class="tag" style="font-size:0.88rem;padding:4px 14px">🛠️ Önlem Al</span>
+    </div>
+    <p style="margin-top:10px;font-size:0.88rem;color:var(--muted)">Sürekli iyileştirme döngüsü — İş Sürekliliği Yönetim Sisteminin temel yaklaşımı</p>
+  </div>
+
+  <div class="soru-tabs">
+    <button class="soru-tab active" onclick="switchSoru(this,'csm-3')">🔘 Çoktan Seçmeli</button>
+    <button class="soru-tab" onclick="switchSoru(this,'bosluk-3')">✏️ Boşluk Doldurma</button>
+    <button class="soru-tab" onclick="switchSoru(this,'dy-3')">✅ Doğru / Yanlış</button>
+    <button class="soru-tab" onclick="switchSoru(this,'klasik-3')">📝 Klasik Sorular</button>
+  </div>
+
+  <div class="soru-panel active" id="csm-3">
+    <div class="soru-card"><div class="soru-no">Soru 1</div><div class="soru-text">Kesinti sonrası ürün ve hizmetleri "kabul edilebilir seviyede" sunmaya devam etme yeteneğine ne denir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Felaket Kurtarma</div><div class="secenek" onclick="csm(this,true,'ISO 22300 standardına göre bu yetenek İş Sürekliliği olarak tanımlanır.')"><span class="harf">B</span> İş Sürekliliği</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Risk Analizi</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Yedekleme</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 2</div><div class="soru-text">BT temelli kesintilere karşı hasarın kısa sürede onarılmasına yönelik "taktiksel" plan hangisidir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> İş Sürekliliği Planı</div><div class="secenek" onclick="csm(this,true,'Felaket kurtarma, bilişim sistemleri odaklı taktiksel bir planlamadır.')"><span class="harf">B</span> Felaket Kurtarma Planı</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Stratejik Eylem Planı</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Kapasite Planı</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 3</div><div class="soru-text">İş kesintisi sonrası "ne kadar veri kaybının" tolere edilebileceğini gösteren metrik hangisidir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> RTO</div><div class="secenek" onclick="csm(this,true,'RPO (Recovery Point Objective), kabul edilebilir veri kaybı noktasını hedefler.')"><span class="harf">B</span> RPO</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> SLA</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> KPI</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 4</div><div class="soru-text">Aşağıdakilerden hangisi "insan kaynaklı" felaket kategorisine girer?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Deprem</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Salgın hastalık</div><div class="secenek" onclick="csm(this,true,'Sabotaj doğrudan insan eylemiyle oluşan bir felakettir.')"><span class="harf">C</span> Sabotaj</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Yangın (Elektrik kaynaklı)</div></div><div class="aciklama-box"></div></div>
+    <div class="soru-card"><div class="soru-no">Soru 5</div><div class="soru-text">İş Sürekliliği Yönetim Sistemi (İSYS) şartlarını açıklayan uluslararası standart hangisidir?</div><div class="secenekler"><div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> ISO 9001</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> ISO 27001</div><div class="secenek" onclick="csm(this,true,'İSYS için geçerli standart ISO 22301\'dir.')"><span class="harf">C</span> ISO 22301</div><div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> ISO 14001</div></div><div class="aciklama-box"></div></div>
+  </div>
+
+  <div class="soru-panel" id="bosluk-3">
+    <div class="bosluk-card"><div class="soru-no">Soru 11</div><div class="soru-text">İş süreçlerini normal çalışma düzenine döndürmek için alınan önlemlere <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'felaket kurtarma')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 12</div><div class="soru-text">Asıl operasyonun durdurulup tüm işlevlerin FKM'den yürütüldüğü teste <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'tam kesinti testi')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 13</div><div class="soru-text">Hangi süreçlerin ne kadar kritik olduğunun belirlendiği aşamaya <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'iş etkisi analizi')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 14</div><div class="soru-text">PUKÖ kısaltmasındaki "K" harfi <strong>_______</strong> anlamına gelir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'kontrol et')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 15</div><div class="soru-text">Bilişim teknolojilerinin iş sürekliliğine hazır olmasıyla ilgili standart <strong>ISO/IEC _______</strong>'dir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'27031')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+  </div>
+
+  <div class="soru-panel" id="dy-3">
+    <div class="dy-card"><div class="dy-text">Felaket kurtarma planları iş sürekliliği planlamasının bir parçasıdır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! DRP, BCP\'nin BT sistemlerine odaklanan alt bileşenidir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">RPO değeri ne kadar büyükse, kurtarma maliyeti o kadar artar.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! RPO büyüdükçe daha fazla veri kaybına tolerans gösterilir, bu da maliyeti DÜŞÜRÜR. Maliyet artan = küçük RPO.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Isı ve nem sorunları "çevresel nedenli" felaketler arasındadır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Isı, nem, toz gibi çevresel faktörler felaket kategorisinde yer alır.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Masabaşı egzersizde sistemler gerçekten kapatılarak test edilir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Masabaşı egzersiz sadece senaryo tartışmasıdır; sistemler gerçekte kapatılmaz.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Üst yönetim desteği İş Sürekliliği Yönetim Sistemi için zorunlu değildir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! ISO 22301\'de üst yönetim liderliği ve taahhüdü açıkça zorunlu tutulan bir gerekliliktir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+  </div>
+
+  <div class="soru-panel" id="klasik-3">
+    <div class="klasik-card"><div class="soru-no">Soru 6</div><div class="soru-text">RTO (Recovery Time Objective) nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Kurtarma Zamanı Hedefi; bir sistemin kesinti sonrası ne kadar süre içinde tekrar çalışır hale gelmesi gerektiğini belirtir. Örneğin RTO=4 saat ise sistem en geç 4 saatte ayağa kalkmalıdır.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 7</div><div class="soru-text">İş Etkisi Analizi (BIA) nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">İşin kesintiye uğraması durumunda oluşacak etkinin ve kritik faaliyetlerin analiz edilmesi sürecidir. Hangi süreçlerin önce geri getirilmesi gerektiğini belirler.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 8</div><div class="soru-text">İş Sürekliliği Planlaması (BCP) ve Felaket Kurtarma Planlaması (DRP) arasındaki temel fark nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">BCP işin kendisine bütünsel yaklaşırken tüm iş fonksiyonlarını kapsar. DRP ise daha çok BT sistemlerinin onarılmasına odaklanan taktiksel bir alt plandır. DRP, BCP'nin bir parçasıdır.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 9</div><div class="soru-text">Felaket Kurtarma Plan Testi türlerinden 2 tanesini yazınız.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">1. Masabaşı Egzersiz: Senaryo tartışması, sistemler kapatılmaz. 2. Tam Kesinti Testi: Asıl operasyon durdurulur, her şey FKM'den yürütülür.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 10</div><div class="soru-text">PUKÖ modeli neyi temsil eder?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Sürekli iyileştirme döngüsüdür: Planla → Uygula → Kontrol Et → Önlem Al. İş Sürekliliği Yönetim Sisteminin temel çerçevesidir.</div></div>
+  </div>
+</div>
+
+<!-- ========== KONU 4: EKSTRA SORULAR ========== -->
+<div class="konu-panel" id="konu-4">
+  <div class="section-title">Ekstra Sorular — PDF Kaynaklı</div>
+
+  <div class="soru-tabs">
+    <button class="soru-tab active" onclick="switchSoru(this,'csm-4')">🔘 Çoktan Seçmeli</button>
+    <button class="soru-tab" onclick="switchSoru(this,'bosluk-4')">✏️ Boşluk Doldurma</button>
+    <button class="soru-tab" onclick="switchSoru(this,'dy-4')">✅ Doğru / Yanlış</button>
+    <button class="soru-tab" onclick="switchSoru(this,'klasik-4')">📝 Klasik Sorular</button>
+  </div>
+
+  <!-- ÇOKTAN SEÇMELİ -->
+  <div class="soru-panel active" id="csm-4">
+    <div class="soru-card">
+      <div class="soru-no">Soru 1</div>
+      <div class="soru-text">Veri (Data) aşağıdakilerden hangisini ifade eder?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> İşlenmiş ve anlamlı bilgi</div>
+        <div class="secenek" onclick="csm(this,true,'Veri; ham, işlenmemiş gerçeklerdir. Henüz anlam kazanmamış sayı, metin veya sembollerdir.')"><span class="harf">B</span> Ham ve işlenmemiş gerçekler</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Yorumlanmış bilgi</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Karar verme süreci</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 2</div>
+      <div class="soru-text">CIA üçlüsünde yer alan kavramlardan biri aşağıdakilerden hangisidir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Hız</div>
+        <div class="secenek" onclick="csm(this,true,'CIA: Gizlilik (Confidentiality), Bütünlük (Integrity), Erişilebilirlik (Availability).')"><span class="harf">B</span> Gizlilik</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Güç</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Maliyet</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 3</div>
+      <div class="soru-text">Worm (kurtçuk) ile virüs arasındaki temel fark nedir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Worm zararsızdır</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Virüs yayılmaz</div>
+        <div class="secenek" onclick="csm(this,true,'Worm, taşıyıcı programa ihtiyaç duymadan ağ üzerinden kendi kendine yayılabilir. Virüs ise yayılmak için bir taşıyıcıya ihtiyaç duyar.')"><span class="harf">C</span> Worm kendi kendine yayılabilir</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Virüs sadece internetten bulaşır</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 4</div>
+      <div class="soru-text">Fidye yazılımı (Ransomware) ne yapar?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Veriyi siler</div>
+        <div class="secenek" onclick="csm(this,true,'Fidye yazılımı dosyaları şifreleyerek kullanıcının verilerine erişimini engeller ve açılması için para (fidye) talep eder.')"><span class="harf">B</span> Veriyi şifreleyerek para talep eder</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Sistemi hızlandırır</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Virüs temizler</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 5</div>
+      <div class="soru-text">Penetrasyon testi ne amaçla yapılır?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Virüs üretmek</div>
+        <div class="secenek" onclick="csm(this,true,'Penetrasyon testi (sızma testi), sistemlerdeki güvenlik açıklarını ve zafiyetleri tespit etmek amacıyla yetkili kişiler tarafından yapılan kontrollü saldırı simülasyonudur.')"><span class="harf">B</span> Açıkları tespit etmek</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Verileri silmek</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Şifreleri saklamak</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 6</div>
+      <div class="soru-text">Siber güvenlikte "bütünlük" neyi ifade eder?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Verinin herkes tarafından erişilebilir olması</div>
+        <div class="secenek" onclick="csm(this,true,'Bütünlük (Integrity): Verinin yetkisiz kişiler tarafından değiştirilmemiş, bozulmamış ve eksiksiz olması anlamına gelir.')"><span class="harf">B</span> Verinin değiştirilmemiş olması</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Verinin silinmesi</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Verinin paylaşılması</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 7</div>
+      <div class="soru-text">APT (Advanced Persistent Threat) nedir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Basit, rastgele bir saldırı türü</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Antivirüs sistemi</div>
+        <div class="secenek" onclick="csm(this,true,'APT; belirli bir hedefe yönelik, uzun süre tespit edilmeden sistemde kalan, organize ve gelişmiş kalıcı tehdit saldırısıdır. Genellikle devlet destekli gruplar tarafından kullanılır.')"><span class="harf">C</span> Hedef odaklı, uzun süreli gelişmiş kalıcı saldırı</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Parola kırma aracı</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 8</div>
+      <div class="soru-text">USOM nedir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Kurum içi müdahale ekibi</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Antivirüs yazılımı</div>
+        <div class="secenek" onclick="csm(this,true,'USOM (Ulusal Siber Olaylara Müdahale Merkezi), Türkiye\'de ulusal düzeyde siber olayları koordine eden merkezdir. BTK bünyesinde faaliyet gösterir.')"><span class="harf">C</span> Ulusal siber olaylara müdahale koordinasyon merkezi</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Şifreleme yazılımı</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 9</div>
+      <div class="soru-text">Güçlü parola nasıl olmalıdır?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Kısa ve basit</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">B</span> Sadece harflerden oluşan</div>
+        <div class="secenek" onclick="csm(this,true,'Güçlü parola; büyük/küçük harf, rakam ve özel karakter içeren, tahmin edilmesi zor, uzun bir paroladır.')"><span class="harf">C</span> Uzun, karmaşık, harf-rakam-sembol içeren</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Aynı karakterlerin tekrarından oluşan</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+    <div class="soru-card">
+      <div class="soru-no">Soru 10</div>
+      <div class="soru-text">Zafiyet (Vulnerability) nedir?</div>
+      <div class="secenekler">
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">A</span> Güçlü bir sistem bileşeni</div>
+        <div class="secenek" onclick="csm(this,true,'Zafiyet; bir sistemdeki, yazılımdaki veya insan davranışındaki güvenlik açığıdır. Saldırganlar bu açıkları kullanarak sisteme sızabilir.')"><span class="harf">B</span> Sistemdeki güvenlik açığı</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">C</span> Antivirüs yazılımı</div>
+        <div class="secenek" onclick="csm(this,false,'')"><span class="harf">D</span> Şifreleme yöntemi</div>
+      </div>
+      <div class="aciklama-box"></div>
+    </div>
+  </div>
+
+  <!-- BOŞLUK DOLDURMA -->
+  <div class="soru-panel" id="bosluk-4">
+    <div class="bosluk-card"><div class="soru-no">Soru 11</div><div class="soru-text">İşlenmemiş ham verilere <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'veri')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 12</div><div class="soru-text">İşlenmiş ve anlam kazanmış verilere <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'enformasyon')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 13</div><div class="soru-text">Gizlilik, bütünlük ve <strong>_______</strong> siber güvenliğin temelidir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'erişilebilirlik')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 14</div><div class="soru-text">Taşıyıcıya ihtiyaç duymadan ağ üzerinde kendi kendine yayılan zararlı yazılıma <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'worm')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 15</div><div class="soru-text">Dosyaları şifreleyerek para talep eden zararlı yazılıma <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'fidye yazılımı')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 16</div><div class="soru-text">Kurum içi siber olaylara müdahale ekibine <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'some')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 17</div><div class="soru-text">Şifreleme bilimine <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'kriptoloji')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 18</div><div class="soru-text">Şifre çözme işlemine <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'kriptoanaliz')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 19</div><div class="soru-text">Sistem açıklarına <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'zafiyet')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+    <div class="bosluk-card"><div class="soru-no">Soru 20</div><div class="soru-text">Devletler arasında gerçekleştirilen siber saldırılara <strong>_______</strong> denir.</div><input class="bosluk-input" placeholder="Cevabınızı yazın..."><button class="kontrol-btn" onclick="boslukKontrol(this,'siber savaş')">Kontrol Et</button><div class="bosluk-sonuc"></div></div>
+  </div>
+
+  <!-- DOĞRU YANLIŞ -->
+  <div class="soru-panel" id="dy-4">
+    <div class="dy-card"><div class="dy-text">Veri, tek başına anlam taşıyan işlenmiş bir bilgidir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Veri ham ve işlenmemiş gerçeklerdir; tek başına anlam taşımaz. Anlam kazanması için işlenerek enformasyona dönüşmesi gerekir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Worm (solucan) kendi kendine ağ üzerinden yayılabilir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Worm, taşıyıcı programa ihtiyaç duymadan kendi kendine yayılır. Bu özellik onu virüsten ayıran temel farktır.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Virüs yayılmak için bir taşıyıcı programa ihtiyaç duyar.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Virüs, kendi başına çalışamaz ve yayılamaz; bir program veya dosyaya tutunması gerekir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Fidye yazılımı (Ransomware) veri yedekleme amacıyla kullanılır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',false,'Yanlış! Fidye yazılımı dosyaları şifreleyerek kullanıcıdan para talep eden zararlı bir yazılımdır; veri yedeklemekle ilgisi yoktur.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',false,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">USOM, Türkiye'de ulusal düzeyde siber olayları koordine eden merkezdir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! USOM (Ulusal Siber Olaylara Müdahale Merkezi), BTK bünyesinde faaliyet gösteren ulusal koordinasyon merkezidir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Siber güvenliğin temel amacı; gizlilik, bütünlük ve erişilebilirliği sağlamaktır.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! CIA üçlüsü olarak da bilinen bu üç temel ilke, siber güvenliğin çekirdeğini oluşturur.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+    <div class="dy-card"><div class="dy-text">Casus yazılım (Spyware) kullanıcıyı izleyerek topladığı bilgileri üçüncü taraflara iletir.</div><div class="dy-btns"><button class="dy-btn d-btn" onclick="dyKontrol(this,'D',true,'Doğru! Spyware, arka planda çalışarak kullanıcının etkinliklerini, parolalarını ve kişisel verilerini izinsiz biçimde toplar ve iletir.')">Doğru</button><button class="dy-btn y-btn" onclick="dyKontrol(this,'Y',true,'')">Yanlış</button></div><div class="dy-aciklama"></div></div>
+  </div>
+
+  <!-- KLASİK -->
+  <div class="soru-panel" id="klasik-4">
+    <div class="klasik-card"><div class="soru-no">Soru 21</div><div class="soru-text">Veri, enformasyon ve bilgi arasındaki farkı açıklayınız.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Veri; ham, işlenmemiş gerçeklerdir (örn. "85 milyon"). Enformasyon; belirli bir amaç için işlenmiş ve anlam kazanmış veridir (örn. "Türkiye nüfusu 85 milyondur"). Bilgi ise enformasyonun deneyim ve yorumla birleşerek kullanılabilir hale getirilmiş üst basamağıdır.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 22</div><div class="soru-text">Siber güvenliğin temel amaçlarını (CIA) açıklayınız.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Siber güvenliğin üç temel amacı CIA üçlüsüdür: 1) Gizlilik (Confidentiality): Bilgiye yalnızca yetkili kişilerin erişmesi. 2) Bütünlük (Integrity): Bilginin yetkisiz değiştirilmemesi. 3) Erişilebilirlik (Availability): Yetkili kişilerin ihtiyaç duydukları anda bilgiye ulaşabilmesi.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 23</div><div class="soru-text">Fidye yazılımı (Ransomware) nasıl çalışır? Korunma yöntemi nedir?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Fidye yazılımı sisteme bulaştıktan sonra kullanıcının dosyalarını güçlü bir şifreleme algoritmasıyla şifreler ve kullanıcının kendi verilerine erişmesini engeller. Ardından şifre çözme anahtarı karşılığında genellikle kripto para ile fidye talep eder. Korunmak için: düzenli yedek almak, güncel antivirüs kullanmak ve şüpheli e-posta eklerini açmamak gerekir.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 24</div><div class="soru-text">SOME ve USOM arasındaki farkı açıklayınız.</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">SOME (Siber Olaylara Müdahale Ekibi): Kurum veya kuruluş düzeyinde çalışan, o kuruma ait siber olaylara müdahale eden ekiptir. USOM (Ulusal Siber Olaylara Müdahale Merkezi): BTK bünyesinde ulusal düzeyde faaliyet gösteren, tüm SOME'leri koordine eden merkezi yapıdır.</div></div>
+    <div class="klasik-card"><div class="soru-no">Soru 25</div><div class="soru-text">Penetrasyon testi (sızma testi) nedir ve ne amaçla yapılır?</div><textarea class="klasik-textarea" placeholder="Cevabınızı buraya yazın..."></textarea><button class="goster-btn" onclick="gosterCevap(this)">👁 Cevabı Göster</button><div class="klasik-cevap">Penetrasyon testi; sistemlerin, ağların veya uygulamaların güvenlik açıklarını tespit etmek amacıyla yetkili güvenlik uzmanlarının gerçek saldırı tekniklerini taklit ederek yaptığı kontrollü saldırı simülasyonudur. Amaç: gerçek bir saldırgan bulmadan önce zafiyetleri keşfetmek ve kapatmaktır.</div></div>
+  </div>
+</div>
+
+<!-- SKOR -->
+<div class="skor-area" id="skor-area">
+  <div>
+    <div class="skor-yuzde" id="skor-yuzde">%0</div>
+    <div class="skor-detail" id="skor-detail">Henüz soru yanıtlanmadı</div>
+  </div>
+  <button class="reset-btn" onclick="resetAll()">🔄 Tümünü Sıfırla</button>
+</div>
+
+</main>
+
+<script>
+let totalAnswered = 0;
+let totalCorrect = 0;
+
+function updateProgress() {
+  const pct = totalAnswered === 0 ? 0 : Math.round((totalCorrect / totalAnswered) * 100);
+  document.getElementById('progress-text').textContent = totalAnswered + ' soru yanıtlandı';
+  document.getElementById('bar-inner').style.width = pct + '%';
+  document.getElementById('score-badge').textContent = '%' + pct;
+  document.getElementById('skor-yuzde').textContent = '%' + pct;
+  document.getElementById('skor-detail').textContent = totalCorrect + ' doğru / ' + (totalAnswered - totalCorrect) + ' yanlış (' + totalAnswered + ' toplam)';
+}
+
+// Konu geçiş
+function switchKonu(idx) {
+  document.querySelectorAll('.konu-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+  document.querySelectorAll('.konu-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// Soru tab geçiş
+function switchSoru(btn, panelId) {
+  const parent = btn.closest('.konu-panel');
+  parent.querySelectorAll('.soru-tab').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.soru-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// Çoktan seçmeli
+function csm(el, isCorrect, explanation) {
+  const card = el.closest('.soru-card');
+  if (card.dataset.answered) return;
+  card.dataset.answered = '1';
+  const secenekler = card.querySelectorAll('.secenek');
+  secenekler.forEach(s => {
+    s.classList.add('disabled');
+    s.onclick = null;
+  });
+  if (isCorrect) {
+    el.classList.add('dogru');
+    totalCorrect++;
+  } else {
+    el.classList.add('yanlis');
+    secenekler.forEach(s => {
+      if (s.onclick === null && !s.classList.contains('yanlis') && !s.classList.contains('dogru')) {
+        // find correct
+      }
+    });
+  }
+  if (explanation) {
+    const box = card.querySelector('.aciklama-box');
+    box.textContent = (isCorrect ? '✅ ' : '❌ ') + explanation;
+    box.classList.add('show');
+  }
+  totalAnswered++;
+  updateProgress();
+}
+
+// Boşluk doldurma
+function boslukKontrol(btn, cevap) {
+  const card = btn.closest('.bosluk-card');
+  if (card.dataset.answered) return;
+  const input = card.querySelector('.bosluk-input');
+  const sonuc = card.querySelector('.bosluk-sonuc');
+  const val = input.value.trim().toLowerCase().replace(/\s+/g,' ');
+  const dogruCevap = cevap.toLowerCase();
+  card.dataset.answered = '1';
+  input.disabled = true;
+  btn.disabled = true;
+  if (val === dogruCevap || val.includes(dogruCevap) || dogruCevap.includes(val)) {
+    input.classList.add('dogru');
+    sonuc.textContent = '✅ Doğru!';
+    sonuc.className = 'bosluk-sonuc show dogru';
+    totalCorrect++;
+  } else {
+    input.classList.add('yanlis');
+    sonuc.textContent = '❌ Yanlış. Doğru cevap: ' + cevap;
+    sonuc.className = 'bosluk-sonuc show yanlis';
+  }
+  totalAnswered++;
+  updateProgress();
+}
+
+// Doğru/Yanlış
+function dyKontrol(btn, secim, dogruSecim, aciklama) {
+  const card = btn.closest('.dy-card');
+  if (card.dataset.answered) return;
+  card.dataset.answered = '1';
+  const btns = card.querySelectorAll('.dy-btn');
+  btns.forEach(b => { b.disabled = true; });
+  const isCorrect = (secim === 'D' && dogruSecim) || (secim === 'Y' && !dogruSecim);
+  if (isCorrect) {
+    btn.classList.add('dogru-sec');
+    totalCorrect++;
+  } else {
+    btn.classList.add('yanlis-sec');
+  }
+  if (aciklama) {
+    const ac = card.querySelector('.dy-aciklama');
+    ac.textContent = (isCorrect ? '✅ ' : '❌ ') + aciklama;
+    ac.className = 'dy-aciklama show ' + (isCorrect ? 'dogru' : 'yanlis');
+  }
+  totalAnswered++;
+  updateProgress();
+}
+
+// Klasik cevap göster
+function gosterCevap(btn) {
+  const cevap = btn.nextElementSibling;
+  if (cevap.classList.contains('show')) {
+    cevap.classList.remove('show');
+    btn.textContent = '👁 Cevabı Göster';
+  } else {
+    cevap.classList.add('show');
+    btn.textContent = '🙈 Cevabı Gizle';
+  }
+}
+
+// Sıfırla
+function resetAll() {
+  if (!confirm('Tüm cevaplar sıfırlansın mı?')) return;
+  location.reload();
+}
+
+// Tema
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const btn = document.querySelector('.theme-btn');
+  btn.textContent = document.body.classList.contains('light') ? '🌙 Koyu Tema' : '☀️ Açık Tema';
+}
+</script>
+</body>
+</html>
